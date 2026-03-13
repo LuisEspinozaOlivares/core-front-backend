@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    image: core-api-backend:0.0.2
+    container_name: core-api-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+    restart: always

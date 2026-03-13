@@ -1,0 +1,409 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["core"]
+}
+
+model afp {
+  afp_id      Int           @id @default(autoincrement())
+  nombre      String        @db.VarChar(50)
+  activo      Boolean?      @default(true)
+  profesional profesional[]
+
+  @@schema("core")
+}
+
+model ambito_contacto {
+  ambito_contacto_id Int        @id @default(autoincrement())
+  descripcion        String     @unique @db.VarChar(50)
+  contacto           contacto[]
+
+  @@schema("core")
+}
+
+model area_administrativa {
+  area_administrativa_id Int         @id @default(autoincrement())
+  nombre                 String      @db.VarChar(100)
+  codigo_postal          String?     @db.VarChar(20)
+  pais_id                Int
+  tipo                   String?     @db.VarChar(50)
+  pais                   pais        @relation(fields: [pais_id], references: [pais_id], onDelete: NoAction, onUpdate: NoAction)
+  localidad              localidad[]
+
+  @@schema("core")
+}
+
+model caja_compensacion {
+  caja_compensacion_id Int           @id @default(autoincrement())
+  nombre               String        @db.VarChar(50)
+  activo               Boolean?      @default(true)
+  profesional          profesional[]
+
+  @@schema("core")
+}
+
+model contacto {
+  contacto_persona_id Int             @id @default(autoincrement())
+  persona_id          Int
+  tipo_contacto_id    Int
+  ambito_contacto_id  Int
+  valor               String          @db.VarChar(255)
+  principal           Boolean?        @default(false)
+  activo              Boolean?        @default(true)
+  ambito_contacto     ambito_contacto @relation(fields: [ambito_contacto_id], references: [ambito_contacto_id], onDelete: NoAction, onUpdate: NoAction)
+  persona             persona         @relation(fields: [persona_id], references: [persona_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_contacto       tipo_contacto   @relation(fields: [tipo_contacto_id], references: [tipo_contacto_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("core")
+}
+
+model contacto_empresa {
+  contacto_empresa_id Int           @id @default(autoincrement())
+  empresa_id          Int
+  tipo_contacto_id    Int
+  valor_contacto      String        @db.VarChar(255)
+  descripcion         String?       @db.VarChar(255)
+  es_principal        Boolean?      @default(false)
+  created_at          DateTime?     @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?     @default(now()) @db.Timestamp(6)
+  empresa             empresa       @relation(fields: [empresa_id], references: [empresa_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_contacto       tipo_contacto @relation(fields: [tipo_contacto_id], references: [tipo_contacto_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("core")
+}
+
+model direccion_persona {
+  direccion_persona_id Int            @id @default(autoincrement())
+  persona_id           Int
+  tipo_direccion_id    Int
+  calle                String?        @db.VarChar(255)
+  numero               String?        @db.VarChar(50)
+  bloque               String?        @db.VarChar(50)
+  apartamento          String?        @db.VarChar(50)
+  localidad_id         Int?
+  activo               Boolean?       @default(true)
+  updated_at           DateTime?      @default(now()) @db.Timestamp(6)
+  localidad            localidad?     @relation(fields: [localidad_id], references: [localidad_id], onDelete: NoAction, onUpdate: NoAction)
+  persona              persona        @relation(fields: [persona_id], references: [persona_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_direccion       tipo_direccion @relation(fields: [tipo_direccion_id], references: [tipo_direccion_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("core")
+}
+
+model empresa {
+  empresa_id          Int                 @id @default(autoincrement())
+  rut_empresa         String              @unique @db.VarChar(20)
+  nombre_comercial    String?             @db.VarChar(255)
+  razon_social        String              @db.VarChar(255)
+  sitio_web           String?             @db.VarChar(255)
+  giro_actividad_id   Int?
+  tipo_sociedad_id    Int?
+  sector_economico_id Int?
+  created_at          DateTime            @default(now()) @db.Timestamp(6)
+  updated_at          DateTime            @default(now()) @db.Timestamp(6)
+  created_by          String?             @db.VarChar(255)
+  updated_by          String?             @db.VarChar(255)
+  activo              Boolean?            @default(true)
+  contacto_empresa    contacto_empresa[]
+  giro_actividad      giro_actividad?     @relation(fields: [giro_actividad_id], references: [giro_actividad_id], onDelete: NoAction, onUpdate: NoAction)
+  sector_economico    sector_economico?   @relation(fields: [sector_economico_id], references: [sector_economico_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_sociedad       tipo_sociedad?      @relation(fields: [tipo_sociedad_id], references: [tipo_sociedad_id], onDelete: NoAction, onUpdate: NoAction)
+  empresa_rol         empresa_rol[]
+  profesional         profesional[]
+  ubicacion_empresa   ubicacion_empresa[]
+
+  @@index([razon_social], map: "idx_empresa_razon_social")
+  @@index([rut_empresa], map: "idx_empresa_rut")
+  @@schema("core")
+}
+
+model empresa_rol {
+  empresa_rol_id   Int         @id @default(autoincrement())
+  empresa_id       Int
+  rol_empresa_id   Int
+  fecha_asignacion DateTime?   @default(now()) @db.Timestamp(6)
+  activo           Boolean?    @default(true)
+  empresa          empresa     @relation(fields: [empresa_id], references: [empresa_id], onDelete: NoAction, onUpdate: NoAction)
+  rol_empresa      rol_empresa @relation(fields: [rol_empresa_id], references: [rol_empresa_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([empresa_id, rol_empresa_id])
+  @@schema("core")
+}
+
+model estado_civil {
+  estado_civil_id Int       @id @default(autoincrement())
+  descripcion     String    @unique @db.VarChar(50)
+  persona         persona[]
+
+  @@schema("core")
+}
+
+model estado_profesional {
+  estado_profesional_id Int           @id @default(autoincrement())
+  codigo                String        @unique @db.VarChar(20)
+  descripcion           String        @db.VarChar(100)
+  profesional           profesional[]
+
+  @@schema("core")
+}
+
+model genero {
+  genero_id   Int       @id @default(autoincrement())
+  codigo      String    @unique @db.VarChar(20)
+  descripcion String?   @db.VarChar(50)
+  persona     persona[]
+
+  @@schema("core")
+}
+
+model giro_actividad {
+  giro_actividad_id Int       @id @default(autoincrement())
+  codigo            String    @unique @db.VarChar(50)
+  descripcion       String    @db.VarChar(255)
+  empresa           empresa[]
+
+  @@schema("core")
+}
+
+model localidad {
+  localidad_id           Int                 @id @default(autoincrement())
+  nombre                 String              @db.VarChar(100)
+  codigo_postal          String?             @db.VarChar(20)
+  area_administrativa_id Int
+  direccion_persona      direccion_persona[]
+  area_administrativa    area_administrativa @relation(fields: [area_administrativa_id], references: [area_administrativa_id], onDelete: NoAction, onUpdate: NoAction)
+  ubicacion_empresa      ubicacion_empresa[]
+
+  @@schema("core")
+}
+
+model nacionalidad {
+  nacionalidad_id Int       @id @default(autoincrement())
+  nombre          String    @unique(map: "uq_nacionalidad_nombre") @db.VarChar(100)
+  gentilicio      String?   @db.VarChar(100)
+  persona         persona[]
+
+  @@schema("core")
+}
+
+model pais {
+  pais_id                                  Int                   @id @default(autoincrement())
+  nombre                                   String                @db.VarChar(100)
+  codigo_iso                               String                @unique @db.VarChar(3)
+  area_administrativa                      area_administrativa[]
+  persona_persona_pais_origen_idTopais     persona[]             @relation("persona_pais_origen_idTopais")
+  persona_persona_pais_residencia_idTopais persona[]             @relation("persona_pais_residencia_idTopais")
+
+  @@schema("core")
+}
+
+model persona {
+  persona_id                            Int                 @id @default(autoincrement())
+  tipo_identificacion_id                Int
+  numero_identificacion                 String              @db.VarChar(50)
+  nombres_persona                       String              @db.VarChar(255)
+  primer_apellido                       String              @db.VarChar(255)
+  fecha_nacimiento                      DateTime?           @db.Date
+  nacionalidad_id                       Int?
+  genero_id                             Int?
+  estado_civil_id                       Int?
+  pais_origen_id                        Int?
+  pais_residencia_id                    Int?
+  created_at                            DateTime            @default(now()) @db.Timestamp(6)
+  updated_at                            DateTime            @default(now()) @db.Timestamp(6)
+  created_by                            String?             @db.VarChar(255)
+  updated_by                            String?             @db.VarChar(255)
+  activo                                Boolean?            @default(true)
+  segundo_apellido                      String?             @db.VarChar(255)
+  contacto                              contacto[]
+  direccion_persona                     direccion_persona[]
+  estado_civil                          estado_civil?       @relation(fields: [estado_civil_id], references: [estado_civil_id], onDelete: NoAction, onUpdate: NoAction)
+  genero                                genero?             @relation(fields: [genero_id], references: [genero_id], onDelete: NoAction, onUpdate: NoAction)
+  nacionalidad                          nacionalidad?       @relation(fields: [nacionalidad_id], references: [nacionalidad_id], onDelete: NoAction, onUpdate: NoAction)
+  pais_persona_pais_origen_idTopais     pais?               @relation("persona_pais_origen_idTopais", fields: [pais_origen_id], references: [pais_id], onDelete: NoAction, onUpdate: NoAction)
+  pais_persona_pais_residencia_idTopais pais?               @relation("persona_pais_residencia_idTopais", fields: [pais_residencia_id], references: [pais_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_identificacion                   tipo_identificacion @relation(fields: [tipo_identificacion_id], references: [tipo_identificacion_id], onDelete: NoAction, onUpdate: NoAction)
+  profesional                           profesional[]
+
+  @@unique([tipo_identificacion_id, numero_identificacion])
+  @@index([primer_apellido], map: "idx_persona_apellidos")
+  @@index([numero_identificacion], map: "idx_persona_identificacion")
+  @@schema("core")
+}
+
+model prevision_salud {
+  prevision_salud_id Int           @id @default(autoincrement())
+  nombre             String        @db.VarChar(50)
+  tipo               String        @db.VarChar(20)
+  activo             Boolean?      @default(true)
+  profesional        profesional[]
+
+  @@schema("core")
+}
+
+model profesional {
+  profesional_id          Int                @id @default(autoincrement())
+  persona_id              Int
+  empresa_id              Int
+  fecha_ingreso           DateTime?          @db.Timestamp(6)
+  fecha_termino           DateTime?          @db.Timestamp(6)
+  estado_profesional_id   Int
+  tipo_contrato_id        Int?
+  profesional_cargo_id    Int
+  profesional_area_id     Int
+  profesional_jefatura_id Int?
+  prevision_salud_id      Int?
+  afp_id                  Int?
+  caja_compensacion_id    Int?
+  created_at              DateTime?          @default(now()) @db.Timestamp(6)
+  updated_at              DateTime?          @default(now()) @db.Timestamp(6)
+  activo                  Boolean?           @default(true)
+  talana_id               Int?
+  afp                     afp?               @relation(fields: [afp_id], references: [afp_id], onDelete: NoAction, onUpdate: NoAction)
+  caja_compensacion       caja_compensacion? @relation(fields: [caja_compensacion_id], references: [caja_compensacion_id], onDelete: NoAction, onUpdate: NoAction)
+  empresa                 empresa            @relation(fields: [empresa_id], references: [empresa_id], onDelete: NoAction, onUpdate: NoAction)
+  estado_profesional      estado_profesional @relation(fields: [estado_profesional_id], references: [estado_profesional_id], onDelete: NoAction, onUpdate: NoAction)
+  persona                 persona            @relation(fields: [persona_id], references: [persona_id], onDelete: NoAction, onUpdate: NoAction)
+  prevision_salud         prevision_salud?   @relation(fields: [prevision_salud_id], references: [prevision_salud_id], onDelete: NoAction, onUpdate: NoAction)
+  profesional_area        profesional_area   @relation(fields: [profesional_area_id], references: [profesional_area_id], onDelete: NoAction, onUpdate: NoAction)
+  profesional_cargo       profesional_cargo  @relation(fields: [profesional_cargo_id], references: [profesional_cargo_id], onDelete: NoAction, onUpdate: NoAction)
+  profesional             profesional?       @relation("profesionalToprofesional", fields: [profesional_jefatura_id], references: [profesional_id], onDelete: NoAction, onUpdate: NoAction)
+  other_profesional       profesional[]      @relation("profesionalToprofesional")
+  tipo_contrato           tipo_contrato?     @relation(fields: [tipo_contrato_id], references: [tipo_contrato_id], onDelete: NoAction, onUpdate: NoAction)
+  profesional_cv          profesional_cv[]
+
+  @@unique([persona_id, empresa_id])
+  @@index([profesional_area_id], map: "idx_profesional_area")
+  @@index([empresa_id], map: "idx_profesional_empresa")
+  @@index([profesional_jefatura_id], map: "idx_profesional_jefatura")
+  @@index([persona_id], map: "idx_profesional_persona")
+  @@schema("core")
+}
+
+model profesional_area {
+  profesional_area_id Int           @id @default(autoincrement())
+  nombre_area         String        @db.VarChar(100)
+  profesional         profesional[]
+
+  @@schema("core")
+}
+
+model profesional_cargo {
+  profesional_cargo_id Int           @id @default(autoincrement())
+  nombre_cargo         String        @db.VarChar(50)
+  descripcion          String?       @db.VarChar(150)
+  activo               Boolean?      @default(true)
+  profesional          profesional[]
+
+  @@schema("core")
+}
+
+model profesional_cv {
+  profesional_cv_id Int         @id @default(autoincrement())
+  profesional_id    Int
+  tipo_cv_id        Int
+  url_documento     String      @db.VarChar(500)
+  nombre_archivo    String?     @db.VarChar(255)
+  fecha_carga       DateTime?   @default(now()) @db.Timestamp(6)
+  activo            Boolean?    @default(true)
+  profesional       profesional @relation(fields: [profesional_id], references: [profesional_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_cv           tipo_cv     @relation(fields: [tipo_cv_id], references: [tipo_cv_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([profesional_id, tipo_cv_id])
+  @@schema("core")
+}
+
+model rol_empresa {
+  rol_empresa_id Int           @id @default(autoincrement())
+  codigo         String        @unique @db.VarChar(50)
+  descripcion    String        @db.VarChar(255)
+  empresa_rol    empresa_rol[]
+
+  @@schema("core")
+}
+
+model sector_economico {
+  sector_economico_id Int       @id @default(autoincrement())
+  nombre_sector       String    @db.VarChar(100)
+  descripcion         String?   @db.VarChar(255)
+  empresa             empresa[]
+
+  @@schema("core")
+}
+
+model tipo_contacto {
+  tipo_contacto_id Int                @id @default(autoincrement())
+  descripcion      String             @unique @db.VarChar(50)
+  contacto         contacto[]
+  contacto_empresa contacto_empresa[]
+
+  @@schema("core")
+}
+
+model tipo_contrato {
+  tipo_contrato_id Int           @id @default(autoincrement())
+  nombre           String        @db.VarChar(50)
+  descripcion      String?       @db.VarChar(150)
+  activo           Boolean?      @default(true)
+  profesional      profesional[]
+
+  @@schema("core")
+}
+
+model tipo_cv {
+  tipo_cv_id     Int              @id @default(autoincrement())
+  codigo         String           @unique @db.VarChar(20)
+  descripcion    String           @db.VarChar(100)
+  profesional_cv profesional_cv[]
+
+  @@schema("core")
+}
+
+model tipo_direccion {
+  tipo_direccion_id Int                 @id @default(autoincrement())
+  descripcion       String              @unique @db.VarChar(50)
+  direccion_persona direccion_persona[]
+  ubicacion_empresa ubicacion_empresa[]
+
+  @@schema("core")
+}
+
+model tipo_identificacion {
+  tipo_identificacion_id Int       @id @default(autoincrement())
+  codigo                 String    @unique @db.VarChar(20)
+  descripcion            String    @db.VarChar(100)
+  persona                persona[]
+
+  @@schema("core")
+}
+
+model tipo_sociedad {
+  tipo_sociedad_id Int       @id @default(autoincrement())
+  codigo           String    @unique @db.VarChar(20)
+  descripcion      String    @db.VarChar(255)
+  empresa          empresa[]
+
+  @@schema("core")
+}
+
+model ubicacion_empresa {
+  ubicacion_empresa_id Int            @id @default(autoincrement())
+  empresa_id           Int
+  tipo_direccion_id    Int
+  calle                String         @db.VarChar(255)
+  numero               String?        @db.VarChar(50)
+  bloque               String?        @db.VarChar(50)
+  apartamento          String?        @db.VarChar(50)
+  localidad_id         Int
+  activo               Boolean?       @default(true)
+  empresa              empresa        @relation(fields: [empresa_id], references: [empresa_id], onDelete: NoAction, onUpdate: NoAction)
+  localidad            localidad      @relation(fields: [localidad_id], references: [localidad_id], onDelete: NoAction, onUpdate: NoAction)
+  tipo_direccion       tipo_direccion @relation(fields: [tipo_direccion_id], references: [tipo_direccion_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@schema("core")
+}
