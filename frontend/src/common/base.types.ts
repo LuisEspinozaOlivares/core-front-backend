@@ -1,16 +1,15 @@
 export interface ApiResponse<T> {
   data: T;
   message?: string;
-  status: number;
+  status?: number;
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T[]> {
-  meta: {
-    total: number;
-    page: number;
-    lastPage: number;
-    limit: number;
-  };
+// Coincide con PaginationResponseDto del backend: { data, page, total, lastPage }
+export interface PaginatedResponse<T> {
+  data: T[];
+  page: number;
+  total: number;
+  lastPage: number;
 }
 
 export type ApiError = {

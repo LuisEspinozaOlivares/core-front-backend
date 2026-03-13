@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Building2, Users, Briefcase, X, LayoutDashboard, UserCheck } from 'lucide-react';
 import logo from './assets/logo-500w.png';
 
@@ -29,6 +29,7 @@ import { profesionalService } from './modules/profesional/services/profesional.s
 type TabType = 'empresas' | 'personas' | 'profesionales';
 
 export default function App() {
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabType>('personas');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isMutationLoading, setIsMutationLoading] = useState(false);
@@ -80,34 +81,53 @@ export default function App() {
     setIsMutationLoading(true);
     try {
       if (activeTab === 'personas') {
-        // 1. Crear Persona
-        const persona = await personaService.create(data);
-        const personaId = persona.id!;
+        // 1. Crear o actualizar Persona
+        if (selectedPersona?.id) {
+          await personaService.update(selectedPersona.id, data);
+        } else {
+          const persona = await personaService.create(data);
+          const personaId = persona.id!;
 
-        // 2. Guardar Contacto si existe
-        if (data.email || data.telefono) {
-          await personaService.saveContacto({
-            personaId: personaId,
-            tipoContactoId: 1, // Asumiendo 1 para Email/Teléfono general
-            ambitoContactoId: 1,
-            valorContacto: data.email || data.telefono,
-            principal: true,
-            activo: true
-          });
-        }
+          // 2. Guardar Contacto si existe
+          if (data.email || data.telefono) {
+            await personaService.saveContacto({
+              personaId: personaId,
+              tipoContactoId: 1,
+              ambitoContactoId: 1,
+              valor: data.email || data.telefono,
+              principal: true,
+              activo: true
+            });
+          }
 
-        // 3. Guardar Dirección si existe
-        if (data.calle || data.numero) {
-          await personaService.saveDireccion({
-            personaId: personaId,
-            tipoDireccionId: 1,
-            calle: data.calle,
-            numero: data.numero,
-            localidadId: data.localidadId || 1
-          });
+          // 3. Guardar Dirección si existe
+          if (data.calle || data.numero) {
+            await personaService.saveDireccion({
+              personaId: personaId,
+              tipoDireccionId: 1,
+              calle: data.calle,
+              numero: data.numero,
+              localidadId: data.localidadId || 1
+            });
+          }
         }
-      } else {
-        console.log(`Simulando envío al Backend (${activeTab}):`, JSON.stringify(data, null, 2));
+        queryClient.invalidateQueries({ queryKey: ['personas'] });
+
+      } else if (activeTab === 'empresas') {
+        if (selectedEmpresa?.id) {
+          await empresaService.update(selectedEmpresa.id, data);
+        } else {
+          await empresaService.create(data);
+        }
+        queryClient.invalidateQueries({ queryKey: ['empresas'] });
+
+      } else if (activeTab === 'profesionales') {
+        if (selectedProfesional?.id) {
+          await profesionalService.update(selectedProfesional.id, data);
+        } else {
+          await profesionalService.create(data);
+        }
+        queryClient.invalidateQueries({ queryKey: ['profesionales'] });
       }
 
       alert(`¡Registro guardado con éxito!\n\nEl sistema ha procesado la información correctamente.`);
@@ -121,10 +141,24 @@ export default function App() {
     }
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm(`¿Estás seguro de eliminar este registro (ID ${id})?`)) {
-      console.log(`Eliminando ${activeTab} ID:`, id);
+  const handleDelete = async (id: number) => {
+    if (!confirm(`¿Estás seguro de eliminar este registro (ID ${id})?`)) return;
+    try {
+      if (activeTab === 'empresas') {
+        await empresaService.delete(id);
+        queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      } else if (activeTab === 'personas') {
+        await personaService.delete(id);
+        queryClient.invalidateQueries({ queryKey: ['personas'] });
+      } else if (activeTab === 'profesionales') {
+        await profesionalService.delete(id);
+        queryClient.invalidateQueries({ queryKey: ['profesionales'] });
+      }
       alert(`Registro eliminado correctamente.`);
+    } catch (error: any) {
+      console.error('Error al eliminar:', error);
+      const errorMsg = error.response?.data?.message || 'Error inesperado al eliminar el registro.';
+      alert(`Error: ${errorMsg}`);
     }
   };
 

@@ -6,7 +6,7 @@ import { profesionalMapper } from '../mapper/profesional.mapper';
 
 export const profesionalService = {
   async getAll(params?: any): Promise<PaginatedResponse<ProfesionalDTO>> {
-    const { data } = await apiClient.get<PaginatedResponse<ProfesionalEntity>>('/profesionales', { params });
+    const { data } = await apiClient.get<PaginatedResponse<ProfesionalEntity>>('/profesional', { params });
     return {
       ...data,
       data: data.data.map(p => profesionalMapper.toDTO(p)),
@@ -14,32 +14,24 @@ export const profesionalService = {
   },
 
   async getById(id: number): Promise<ApiResponse<ProfesionalDTO>> {
-    const { data } = await apiClient.get<ApiResponse<ProfesionalEntity>>(`/profesionales/${id}`);
-    return {
-      ...data,
-      data: profesionalMapper.toDTO(data.data),
-    };
+    // El backend devuelve ProfesionalDto directamente (sin wrapper ApiResponse)
+    const { data } = await apiClient.get<ProfesionalEntity>(`/profesional/${id}`);
+    return { data: profesionalMapper.toDTO(data) };
   },
 
   async create(profesional: ProfesionalDTO): Promise<ApiResponse<ProfesionalDTO>> {
     const entity = profesionalMapper.toEntity(profesional);
-    const { data } = await apiClient.post<ApiResponse<ProfesionalEntity>>('/profesionales', entity);
-    return {
-      ...data,
-      data: profesionalMapper.toDTO(data.data),
-    };
+    const { data } = await apiClient.post<ProfesionalEntity>('/profesional', entity);
+    return { data: profesionalMapper.toDTO(data) };
   },
 
   async update(id: number, profesional: ProfesionalDTO): Promise<ApiResponse<ProfesionalDTO>> {
     const entity = profesionalMapper.toEntity(profesional);
-    const { data } = await apiClient.put<ApiResponse<ProfesionalEntity>>(`/profesionales/${id}`, entity);
-    return {
-      ...data,
-      data: profesionalMapper.toDTO(data.data),
-    };
+    const { data } = await apiClient.put<ProfesionalEntity>(`/profesional/${id}`, entity);
+    return { data: profesionalMapper.toDTO(data) };
   },
 
   async delete(id: number): Promise<void> {
-    await apiClient.delete(`/profesionales/${id}`);
+    await apiClient.delete(`/profesional/${id}`);
   },
 };

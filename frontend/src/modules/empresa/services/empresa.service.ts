@@ -6,7 +6,7 @@ import { empresaMapper } from '../mapper/empresa.mapper';
 
 export const empresaService = {
   async getAll(params?: any): Promise<PaginatedResponse<EmpresaDTO>> {
-    const { data } = await apiClient.get<PaginatedResponse<EmpresaEntity>>('/empresas', { params });
+    const { data } = await apiClient.get<PaginatedResponse<EmpresaEntity>>('/empresa', { params });
     return {
       ...data,
       data: data.data.map(e => empresaMapper.toDTO(e)),
@@ -14,32 +14,24 @@ export const empresaService = {
   },
 
   async getById(id: number): Promise<ApiResponse<EmpresaDTO>> {
-    const { data } = await apiClient.get<ApiResponse<EmpresaEntity>>(`/empresas/${id}`);
-    return {
-      ...data,
-      data: empresaMapper.toDTO(data.data),
-    };
+    // El backend devuelve EmpresaDto directamente (sin wrapper ApiResponse)
+    const { data } = await apiClient.get<EmpresaEntity>(`/empresa/${id}`);
+    return { data: empresaMapper.toDTO(data) };
   },
 
   async create(empresa: EmpresaDTO): Promise<ApiResponse<EmpresaDTO>> {
     const entity = empresaMapper.toEntity(empresa);
-    const { data } = await apiClient.post<ApiResponse<EmpresaEntity>>('/empresas', entity);
-    return {
-      ...data,
-      data: empresaMapper.toDTO(data.data),
-    };
+    const { data } = await apiClient.post<EmpresaEntity>('/empresa', entity);
+    return { data: empresaMapper.toDTO(data) };
   },
 
   async update(id: number, empresa: EmpresaDTO): Promise<ApiResponse<EmpresaDTO>> {
     const entity = empresaMapper.toEntity(empresa);
-    const { data } = await apiClient.put<ApiResponse<EmpresaEntity>>(`/empresas/${id}`, entity);
-    return {
-      ...data,
-      data: empresaMapper.toDTO(data.data),
-    };
+    const { data } = await apiClient.put<EmpresaEntity>(`/empresa/${id}`, entity);
+    return { data: empresaMapper.toDTO(data) };
   },
 
   async delete(id: number): Promise<void> {
-    await apiClient.delete(`/empresas/${id}`);
+    await apiClient.delete(`/empresa/${id}`);
   },
 };

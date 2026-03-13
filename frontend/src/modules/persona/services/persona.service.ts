@@ -19,12 +19,16 @@ export const personaService = {
     },
 
     async create(persona: PersonaDTO): Promise<PersonaDTO> {
-        const { data } = await apiClient.post('/persona', persona);
+        // Envía solo los campos que acepta CrearPersonaDto (excluye id, active, email, telefono, calle, numero, localidadId)
+        const { id, active, email, telefono, calle, numero, localidadId, ...body } = persona as any;
+        const { data } = await apiClient.post('/persona', body);
         return data;
     },
 
     async update(id: number, persona: PersonaDTO): Promise<PersonaDTO> {
-        const { data } = await apiClient.put(`/persona/${id}`, persona);
+        // Envía solo los campos que acepta ModificarPersonaDto (excluye id, active, email, telefono, calle, numero, localidadId)
+        const { id: _id, active, email, telefono, calle, numero, localidadId, ...body } = persona as any;
+        const { data } = await apiClient.put(`/persona/${id}`, body);
         return data;
     },
 
@@ -65,7 +69,7 @@ export const personaService = {
 
     // Métodos para Contacto y Dirección (Relaciones)
     async saveContacto(contacto: any): Promise<any> {
-        const { data } = await apiClient.post('/contacto-persona', contacto);
+        const { data } = await apiClient.post('/contacto', contacto);
         return data;
     },
 

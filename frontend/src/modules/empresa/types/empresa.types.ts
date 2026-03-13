@@ -1,6 +1,19 @@
 /**
- * Entidades de la base de datos para el módulo Empresa (snake_case)
+ * Entidad que refleja la respuesta del backend (camelCase, coincide con EmpresaDto de NestJS)
  */
+export interface EmpresaEntity {
+  id: number;
+  rutEmpresa: string;
+  nombreComercial?: string | null;
+  razonSocial: string;
+  sitioWeb?: string | null;
+  giroActividadId?: number | null;
+  tipoSociedadId?: number | null;
+  sectorEconomicoId?: number | null;
+  active: boolean;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
 
 export interface RolEmpresaEntity {
   rol_empresa_id: number;
@@ -34,21 +47,4 @@ export interface UbicacionEmpresaEntity {
   apartamento?: string;
   localidad_id: number;
   fecha_creacion?: string;
-}
-
-export interface EmpresaEntity {
-  empresa_id: number;
-  nombre_comercial: string;
-  rut_empresa: string;
-  razon_social: string;
-  sitio_web?: string;
-  giro_actividad_id: number;
-  tipo_sociedad_id: number;
-  sector_economico_id: number;
-  activo: boolean;
-  
-  // Relaciones
-  roles?: EmpresaRolEntity[];
-  contactos?: ContactoEmpresaEntity[];
-  ubicaciones?: UbicacionEmpresaEntity[];
 }
