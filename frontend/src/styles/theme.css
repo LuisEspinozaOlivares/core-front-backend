@@ -1,0 +1,40 @@
+/* ACL Corporate Palette — CSS Custom Properties */
+:root {
+  /* Primary */
+  --acl-primary:        #E31D4A;
+  --acl-primary-dark:   #C2183F;
+  --acl-primary-light:  #f56b88;
+
+  /* Secondary / Purple */
+  --acl-secondary:      #5135A1;
+  --acl-secondary-dark: #3d2878;
+
+  /* Sidebar */
+  --acl-sidebar-bg:     #1F1D2C;
+  --acl-sidebar-text:   rgba(255,255,255,0.8);
+  --acl-sidebar-hover:  rgba(255,255,255,0.08);
+  --acl-sidebar-active: rgba(255,255,255,0.15);
+  --acl-sidebar-border: rgba(255,255,255,0.08);
+  --acl-sidebar-gradient: linear-gradient(90deg, #E31D4A, #5135A1);
+
+  /* Surface / BG */
+  --acl-bg-body:   #F8F9FC;
+  --acl-bg-white:  #ffffff;
+  --acl-border:    #e3e6f0;
+
+  /* Text */
+  --acl-text-dark:  #1A1A1A;
+  --acl-text-muted: #858796;
+
+  /* Semantic (unchanged from SB Admin 2) */
+  --acl-success:  #1cc88a;
+  --acl-info:     #36b9cc;
+  --acl-warning:  #f6c23e;
+  --acl-danger:   #e74a3b;
+
+  /* Topbar */
+  --acl-topbar-bg:         #ffffff;
+  --acl-topbar-border:     #e3e6f0;
+  --acl-search-focus-ring: rgba(227, 29, 74, 0.25);
+  --acl-search-border-focus: #E31D4A;
+}
