@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { Layout } from './components/Layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import type { SidebarPage } from './components/Sidebar';
 
 // Páginas
@@ -160,6 +161,7 @@ export default function App() {
   };
 
   return (
+    <ProtectedRoute>
     <Layout activePage={activeTab} onNavigate={setActiveTab}>
 
       {/* Dashboard */}
@@ -287,5 +289,6 @@ export default function App() {
         </div>
       )}
     </Layout>
+    </ProtectedRoute>
   );
 }

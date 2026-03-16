@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Search, Bell, User, ChevronDown, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface TopbarProps {
   sidebarWidth?: string;
@@ -8,6 +9,15 @@ interface TopbarProps {
 export function Topbar({ sidebarWidth = '16rem' }: TopbarProps) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  // Iniciales para el avatar (máx 2 chars)
+  const initials = user?.name
+    ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    : 'U';
+
+  const displayName = user?.name ?? 'Usuario';
+  const displayRole = user?.roles?.[0] ?? 'Usuario';
 
   return (
     <header
@@ -19,7 +29,7 @@ export function Topbar({ sidebarWidth = '16rem' }: TopbarProps) {
       }}
     >
       {/* Search */}
-      <form className="flex items-center gap-2 relative">
+      <form className="flex items-center gap-2 relative" onSubmit={(e) => e.preventDefault()}>
         <input
           type="search"
           placeholder="Buscar..."
@@ -65,24 +75,62 @@ export function Topbar({ sidebarWidth = '16rem' }: TopbarProps) {
             className="flex items-center gap-2 text-sm font-semibold hover:opacity-80 transition-opacity"
             style={{ color: 'var(--acl-text-dark)' }}
           >
+            {/* Avatar con iniciales */}
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black flex-shrink-0"
               style={{ background: 'var(--acl-sidebar-gradient)' }}
             >
-              A
+              {initials}
             </div>
-            <span className="hidden sm:block">Admin ACL</span>
+
+            {/* Nombre y rol — ocultos en pantallas muy pequeñas */}
+            <div className="hidden sm:flex flex-col items-start leading-tight max-w-[140px]">
+              <span
+                className="font-black text-[13px] truncate w-full"
+                style={{ color: 'var(--acl-text-dark)' }}
+                title={displayName}
+              >
+                {displayName}
+              </span>
+              <span
+                className="text-[10px] font-bold uppercase tracking-widest truncate w-full"
+                style={{ color: 'var(--acl-text-muted)' }}
+                title={displayRole}
+              >
+                {displayRole}
+              </span>
+            </div>
+
             <ChevronDown size={14} style={{ color: 'var(--acl-text-muted)' }} />
           </button>
 
           {dropdownOpen && (
             <div
-              className="absolute right-0 mt-2 w-48 rounded-xl shadow-lg border overflow-hidden"
+              className="absolute right-0 mt-2 w-52 rounded-xl shadow-lg border overflow-hidden"
               style={{
                 backgroundColor: 'var(--acl-bg-white)',
                 borderColor: 'var(--acl-border)',
               }}
             >
+              {/* User info header */}
+              <div
+                className="px-4 py-3 border-b"
+                style={{ borderColor: 'var(--acl-border)', backgroundColor: 'var(--acl-bg-body)' }}
+              >
+                <p
+                  className="text-xs font-black truncate"
+                  style={{ color: 'var(--acl-text-dark)' }}
+                >
+                  {displayName}
+                </p>
+                <p
+                  className="text-[10px] truncate mt-0.5"
+                  style={{ color: 'var(--acl-text-muted)' }}
+                >
+                  {user?.email ?? ''}
+                </p>
+              </div>
+
               <button
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-gray-50 transition-colors"
                 style={{ color: 'var(--acl-text-dark)' }}
@@ -99,11 +147,16 @@ export function Topbar({ sidebarWidth = '16rem' }: TopbarProps) {
                 <Settings size={14} style={{ color: 'var(--acl-text-muted)' }} />
                 Configuración
               </button>
+
               <div style={{ borderTop: '1px solid var(--acl-border)' }} />
+
               <button
                 className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-red-50 transition-colors"
                 style={{ color: 'var(--acl-primary)' }}
-                onClick={() => setDropdownOpen(false)}
+                onClick={() => {
+                  setDropdownOpen(false);
+                  logout();
+                }}
               >
                 <LogOut size={14} />
                 Cerrar sesión
