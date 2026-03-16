@@ -233,18 +233,12 @@ export const authService = {
   },
 
   /**
-   * Cierra la sesión: limpia storage y redirige al endpoint end-session de Authentik
-   * pasando id_token_hint para que Authentik invalide la sesión en el servidor.
+   * Cierra la sesión local: limpia tokens del storage y redirige a /if/user/#/library.
+   * No llama al endpoint end-session de Authentik — la sesión SSO permanece activa.
    */
   logout(): void {
-    const idToken = localStorage.getItem(STORAGE_KEYS.idToken);
     clearLocalSession();
-
-    const endSessionUrl = new URL(getAuthentikEndpoint('/if/user/#/library'));
-    if (idToken) endSessionUrl.searchParams.set('id_token_hint', idToken);
-    endSessionUrl.searchParams.set('post_logout_redirect_uri', CONFIG.postLogoutRedirectUri);
-
-    window.location.assign(endSessionUrl.toString());
+    window.location.assign('https://auth.acl.cl/if/user/#/library');
   },
 
   /** Retorna el usuario guardado en localStorage, o null si no hay sesión. */
